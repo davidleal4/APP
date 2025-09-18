@@ -1,0 +1,55 @@
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# Dependencies
+node_modules/
+venv/
+
+# Database
+*.sqlite3
+*.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build outputs
+dist/
+build/
+.next/
+staticfiles/
+
+# Media files (too large for git)
+media/
+
+# AI Models (too large for git)
+models/
+*.pth
+*.bin
+*.safetensors
+
+# Docker volumes
+postgres_data/
+media_volume/
+static_volume/
+
+# Kubernetes secrets
+kubernetes/secrets/
+
+# Temporary files
+*.tmp
+*.temp
+.pytest_cache/
+.coverage

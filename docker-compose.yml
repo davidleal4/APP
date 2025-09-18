@@ -1,0 +1,111 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      POSTGRES_DB: ai_influencer
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+
+  # Redis for Celery and Caching
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  # Django Backend
+  backend:
+    build: ./backend
+    command: gunicorn ai_influencer_backend.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - ./backend:/app
+      - media_volume:/app/media
+      - static_volume:/app/staticfiles
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=False
+      - USE_POSTGRES=True
+      - DB_NAME=ai_influencer
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+      - DB_HOST=db
+      - DB_PORT=5432
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+
+  # Celery Worker for AI Processing
+  celery:
+    build: ./backend
+    command: celery -A ai_influencer_backend worker --loglevel=info
+    volumes:
+      - ./backend:/app
+      - media_volume:/app/media
+    environment:
+      - DEBUG=False
+      - USE_POSTGRES=True
+      - DB_NAME=ai_influencer
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+      - DB_HOST=db
+      - DB_PORT=5432
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+
+  # Celery Beat for Scheduled Tasks
+  celery-beat:
+    build: ./backend
+    command: celery -A ai_influencer_backend beat --loglevel=info
+    volumes:
+      - ./backend:/app
+    environment:
+      - DEBUG=False
+      - USE_POSTGRES=True
+      - DB_NAME=ai_influencer
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+      - DB_HOST=db
+      - DB_PORT=5432
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+
+  # Next.js Frontend
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NODE_ENV=production
+    depends_on:
+      - backend
+
+  # Nginx (Production Load Balancer/Reverse Proxy)
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    depends_on:
+      - backend
+      - frontend
+
+volumes:
+  postgres_data:
+  media_volume:
+  static_volume:

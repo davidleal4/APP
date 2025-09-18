@@ -1,0 +1,47 @@
+# Core Django and API
+Django==5.2.6
+djangorestframework==3.16.1
+django-cors-headers==4.8.0
+djangorestframework-simplejwt==5.5.1
+django-allauth==65.11.2
+
+# Database
+psycopg2-binary==2.9.10
+
+# Task Queue
+celery==5.5.3
+redis==6.4.0
+
+# Image/File Processing
+Pillow==11.3.0
+boto3==1.35.9
+django-storages==1.14.4
+
+# Payments
+stripe==12.5.1
+
+# Authentication
+PyJWT==2.9.0
+
+# AI/ML
+torch==2.4.1
+transformers==4.45.0
+diffusers==0.30.0
+accelerate==0.34.0
+
+# Environment
+python-decouple==3.8
+requests==2.32.3
+
+# Security
+django-ratelimit==4.1.0
+django-simple-captcha==0.6.0
+
+# Monitoring
+sentry-sdk==2.18.0
+
+# Development
+django-debug-toolbar==4.4.6
+
+# Production
+gunicorn==23.0.0

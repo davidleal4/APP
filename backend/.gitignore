@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# Django
+*.log
+db.sqlite3
+media/
+staticfiles/
+
+# Environment variables
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Testing
+.coverage
+.pytest_cache/
+htmlcov/
+
+# Logs
+logs/
+*.log
+
+# AI Models (too large for git)
+models/
+*.pth
+*.bin
+*.safetensors
+
+# Temporary files
+*.tmp
+*.temp
