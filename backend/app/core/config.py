@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "StudyOS"
     
     # Database
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql+psycopg2://postgres:postgres@localhost:5432/studynos")
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./studynos.db")
     
     # JWT
     JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY", "your-jwt-secret-key-here")

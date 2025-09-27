@@ -7,7 +7,7 @@ from app.core.config import settings
 from app.core.database import get_db, engine
 from app.api.v1.api import api_router
 from app.models import models
-from app.core.scheduler import scheduler
+# from app.core.scheduler import scheduler
 
 # Create database tables
 models.Base.metadata.create_all(bind=engine)
@@ -31,14 +31,14 @@ app.add_middleware(
 # Include API router
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
-# Start scheduler for reminders
-@app.on_event("startup")
-async def startup_event():
-    scheduler.start()
+# Start scheduler for reminders (disabled for now)
+# @app.on_event("startup")
+# async def startup_event():
+#     scheduler.start()
 
-@app.on_event("shutdown")
-async def shutdown_event():
-    scheduler.shutdown()
+# @app.on_event("shutdown")
+# async def shutdown_event():
+#     scheduler.shutdown()
 
 # Health check endpoint
 @app.get("/health")

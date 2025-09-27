@@ -1,10 +1,10 @@
-import resend
+# import resend
 from app.core.config import settings
 from typing import Optional
 
-# Initialize Resend
-if settings.EMAIL_API_KEY:
-    resend.api_key = settings.EMAIL_API_KEY
+# Initialize Resend (mocked for now)
+# if settings.EMAIL_API_KEY:
+#     resend.api_key = settings.EMAIL_API_KEY
 
 def send_magic_link_email(email: str, magic_token: str) -> bool:
     """Send magic link email for authentication"""
@@ -26,12 +26,13 @@ def send_magic_link_email(email: str, magic_token: str) -> bool:
             """
         }
         
-        if settings.EMAIL_API_KEY:
-            email_response = resend.Emails.send(params)
-            return email_response.get("id") is not None
-        else:
-            print(f"Magic link email would be sent to {email}: {magic_link}")
-            return True
+        # Mock email sending for now - comment out the resend code
+        # if settings.EMAIL_API_KEY:
+        #     email_response = resend.Emails.send(params)
+        #     return email_response.get("id") is not None
+        # else:
+        print(f"Magic link email would be sent to {email}: {magic_link}")
+        return True
             
     except Exception as e:
         print(f"Failed to send magic link email: {e}")
@@ -52,12 +53,13 @@ def send_reminder_email(email: str, subject: str, content: str) -> bool:
             """
         }
         
-        if settings.EMAIL_API_KEY:
-            email_response = resend.Emails.send(params)
-            return email_response.get("id") is not None
-        else:
-            print(f"Reminder email would be sent to {email}: {subject}")
-            return True
+        # Mock email sending for now - comment out the resend code
+        # if settings.EMAIL_API_KEY:
+        #     email_response = resend.Emails.send(params)
+        #     return email_response.get("id") is not None
+        # else:
+        print(f"Reminder email would be sent to {email}: {subject}")
+        return True
             
     except Exception as e:
         print(f"Failed to send reminder email: {e}")
