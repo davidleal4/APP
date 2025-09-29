@@ -8,16 +8,13 @@ from sqlalchemy.orm import Session
 from app import models, schemas
 from app.core import security
 from app.core.config import settings
-from app.core.db import SessionLocal
+from app.core.db import get_db as core_get_db
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login")
 
+# Re-export core DB dependency so test overrides work consistently
 def get_db() -> Generator:
-    try:
-        db = SessionLocal()
-        yield db
-    finally:
-        db.close()
+    yield from core_get_db()
 
 def get_current_user(
     db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)

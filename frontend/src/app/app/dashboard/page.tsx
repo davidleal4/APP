@@ -3,8 +3,38 @@ import { Sidebar } from '@/components/Sidebar'
 import { CalendarWidget } from '@/components/CalendarWidget'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { TrendingUp, BookOpen, Calendar, Brain } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { gpaAPI, assignmentsAPI, classesAPI } from '@/lib/api'
+import toast from 'react-hot-toast'
 
 export default function DashboardPage() {
+  const [gpa, setGpa] = useState<number | null>(null)
+  const [deadlines, setDeadlines] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [classesCount, setClassesCount] = useState<number>(0)
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const [gpaRes, assignmentsRes, classesRes] = await Promise.all([
+          gpaAPI.calculate(),
+          assignmentsAPI.getAll(),
+          classesAPI.getAll(),
+        ])
+        setGpa(gpaRes.data.overall_gpa)
+        const upcoming = (assignmentsRes.data || [])
+          .filter((a: any) => a.due_date && !a.completed)
+          .slice(0, 5)
+        setDeadlines(upcoming)
+        setClassesCount((classesRes.data || []).length)
+      } catch (e: any) {
+        toast.error('Failed to load dashboard data')
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [])
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
@@ -22,8 +52,8 @@ export default function DashboardPage() {
                   <TrendingUp className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">3.85</div>
-                  <p className="text-xs text-muted-foreground">+2.1% from last semester</p>
+                  <div className="text-2xl font-bold">{gpa ?? '—'}</div>
+                  <p className="text-xs text-muted-foreground">Current overall GPA</p>
                 </CardContent>
               </Card>
               
@@ -33,8 +63,8 @@ export default function DashboardPage() {
                   <BookOpen className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">6</div>
-                  <p className="text-xs text-muted-foreground">18 total credits</p>
+                  <div className="text-2xl font-bold">{classesCount}</div>
+                  <p className="text-xs text-muted-foreground">Active classes</p>
                 </CardContent>
               </Card>
               
@@ -44,8 +74,8 @@ export default function DashboardPage() {
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">4</div>
-                  <p className="text-xs text-muted-foreground">Due this week</p>
+                  <div className="text-2xl font-bold">{deadlines.length}</div>
+                  <p className="text-xs text-muted-foreground">Upcoming</p>
                 </CardContent>
               </Card>
               
@@ -71,27 +101,18 @@ export default function DashboardPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <h4 className="font-medium">Data Structures Project</h4>
-                        <p className="text-sm text-gray-500">CS 301 • Due Tomorrow</p>
+                    {loading && (
+                      <div className="animate-pulse h-24 bg-gray-100 rounded" />
+                    )}
+                    {!loading && deadlines.map((a) => (
+                      <div key={a.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div>
+                          <h4 className="font-medium">{a.title}</h4>
+                          <p className="text-sm text-gray-500">Due {new Date(a.due_date).toLocaleDateString()}</p>
+                        </div>
+                        <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">Upcoming</span>
                       </div>
-                      <span className="px-2 py-1 text-xs bg-red-100 text-red-800 rounded-full">Urgent</span>
-                    </div>
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <h4 className="font-medium">Calculus Homework</h4>
-                        <p className="text-sm text-gray-500">MATH 201 • Due Friday</p>
-                      </div>
-                      <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">Pending</span>
-                    </div>
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <h4 className="font-medium">Essay on Shakespeare</h4>
-                        <p className="text-sm text-gray-500">ENG 102 • Submitted</p>
-                      </div>
-                      <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">Complete</span>
-                    </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>

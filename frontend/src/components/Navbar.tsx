@@ -1,7 +1,10 @@
-import { Bell, Search, User } from 'lucide-react'
+import { Bell, Search, User, Moon, Sun } from 'lucide-react'
 import { Button } from './ui/button'
+import { useTheme } from 'next-themes'
 
 export function Navbar() {
+  const { theme, setTheme } = useTheme()
+  const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark')
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -27,6 +30,11 @@ export function Navbar() {
             <Button variant="ghost" size="icon">
               <Bell className="h-5 w-5" />
             </Button>
+
+          {/* Theme Toggle */}
+          <Button variant="ghost" size="icon" onClick={toggleTheme}>
+            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </Button>
 
             {/* Profile */}
             <Button variant="ghost" size="icon">

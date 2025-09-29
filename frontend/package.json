@@ -31,7 +31,10 @@
     "@hookform/resolvers": "^3.3.0",
     "clsx": "^2.0.0",
     "tailwind-merge": "^2.0.0",
-    "class-variance-authority": "^0.7.0"
+    "class-variance-authority": "^0.7.0",
+    "next-themes": "^0.2.1",
+    "react-hot-toast": "^2.4.1",
+    "react-big-calendar": "^1.8.6"
   },
   "devDependencies": {
     "eslint": "^8",

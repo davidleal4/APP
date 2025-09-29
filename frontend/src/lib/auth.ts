@@ -1,5 +1,6 @@
 import NextAuth, { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
+import EmailProvider from 'next-auth/providers/email'
 import { authAPI } from './api'
 
 export const authOptions: NextAuthOptions = {
@@ -26,7 +27,7 @@ export const authOptions: NextAuthOptions = {
             }
 
             return {
-              id: '1', // In real app, decode token to get user ID
+              id: '1',
               email: credentials.email,
               accessToken: access_token,
             }
@@ -37,6 +38,11 @@ export const authOptions: NextAuthOptions = {
 
         return null
       }
+    })
+    ,
+    EmailProvider({
+      server: process.env.RESEND_SMTP_URL || '',
+      from: process.env.RESEND_FROM || 'no-reply@studynos.app'
     })
   ],
   pages: {

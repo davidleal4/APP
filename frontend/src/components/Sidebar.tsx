@@ -35,7 +35,7 @@ export function Sidebar() {
       {/* Logo */}
       <div className="flex items-center h-16 px-6 border-b border-gray-200">
         <BookOpen className="h-8 w-8 text-blue-600" />
-        <span className="ml-2 text-xl font-semibold text-gray-900">StudyApp</span>
+        <span className="ml-2 text-xl font-semibold text-gray-900">StudyOS</span>
       </div>
 
       {/* Navigation */}

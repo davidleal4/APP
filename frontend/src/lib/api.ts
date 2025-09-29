@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { getSession } from 'next-auth/react'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -10,19 +11,18 @@ export const api = axios.create({
   },
 })
 
-// Request interceptor to add auth token
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('access_token')
+// Request interceptor to add auth token (from localStorage fallback)
+api.interceptors.request.use(async (config) => {
+  if (typeof window !== 'undefined') {
+    // Prefer NextAuth session token
+    const session = await getSession()
+    const token = (session as any)?.accessToken || localStorage.getItem('access_token')
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`
+      ;(config.headers as any).Authorization = `Bearer ${token}`
     }
-    return config
-  },
-  (error) => {
-    return Promise.reject(error)
   }
-)
+  return config
+}, (error) => Promise.reject(error))
 
 // Response interceptor to handle errors
 api.interceptors.response.use(
@@ -39,8 +39,14 @@ api.interceptors.response.use(
 
 // Auth API calls
 export const authAPI = {
-  login: (email: string, password: string) =>
-    api.post('/auth/login', { username: email, password }),
+  login: (email: string, password: string) => {
+    const form = new URLSearchParams()
+    form.append('username', email)
+    form.append('password', password)
+    return api.post('/auth/login', form, {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    })
+  },
   
   register: (email: string, password: string, full_name: string) =>
     api.post('/auth/register', { email, password, full_name }),
@@ -71,6 +77,7 @@ export const flashcardsAPI = {
   create: (data: any) => api.post('/flashcards/', data),
   update: (id: string, data: any) => api.put(`/flashcards/${id}`, data),
   delete: (id: string) => api.delete(`/flashcards/${id}`),
+  generate: (payload: any) => api.post('/flashcards/generate', payload),
 }
 
 // GPA API calls
