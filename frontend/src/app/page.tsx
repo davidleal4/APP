@@ -18,7 +18,7 @@ export default function LandingPage() {
           <Link className="text-sm font-medium hover:underline underline-offset-4" href="#pricing">
             Pricing
           </Link>
-          <Link className="text-sm font-medium hover:underline underline-offset-4" href="/app/dashboard">
+          <Link className="text-sm font-medium hover:underline underline-offset-4" href="/auth/login">
             Sign In
           </Link>
         </nav>
@@ -40,7 +40,7 @@ export default function LandingPage() {
               </div>
               <div className="space-x-4">
                 <Button asChild>
-                  <Link href="/app/dashboard">
+                  <Link href="/auth/register">
                     Get Started
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
