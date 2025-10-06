@@ -1,0 +1,347 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Plan {
+  FREE
+  PRO
+  TEAM
+  ENTERPRISE
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+enum RunStatus {
+  QUEUED
+  RUNNING
+  SUCCESS
+  FAILED
+  CANCELLED
+}
+
+enum DatasetKind {
+  EVAL
+  CORPUS
+}
+
+enum IntegrationProvider {
+  OPENAI
+  ANTHROPIC
+  GOOGLE
+  DEEPSEEK
+  PUSHER
+  STRIPE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
+  TRIALING
+}
+
+model User {
+  id                      String        @id @default(cuid())
+  email                   String        @unique
+  emailVerified           DateTime?
+  name                    String?
+  image                   String?
+  passwordHash            String?
+  currentOrganizationId   String?
+  currentOrganization     Organization? @relation("CurrentOrg", fields: [currentOrganizationId], references: [id])
+
+  accounts Account[]
+  sessions Session[]
+  memberships Membership[]
+  auditLogs AuditLog[] @relation("UserAuditLogs")
+  comments  Comment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Organization {
+  id           String         @id @default(cuid())
+  name         String
+  slug         String         @unique
+  plan         Plan           @default(FREE)
+  seats        Int            @default(3)
+  featureFlags Json?
+
+  memberships  Membership[]
+  projects     Project[]
+  prompts      Prompt[]
+  datasets     Dataset[]
+  apiKeys      ApiKey[]
+  integrations Integration[]
+  creditLedger CreditLedger[]
+  subscription Subscription?
+  webhooks     Webhook[]
+  auditLogs    AuditLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Membership {
+  userId         String
+  organizationId String
+  role           Role
+
+  user           User         @relation(fields: [userId], references: [id])
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  @@id([userId, organizationId])
+}
+
+model Project {
+  id              String        @id @default(cuid())
+  organizationId  String
+  name            String
+  description     String?
+  tags            String[]
+  isSaved         Boolean       @default(false)
+  createdByUserId String?
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  createdBy    User?         @relation(fields: [createdByUserId], references: [id])
+
+  pipelines Pipeline[]
+  comments  Comment[] @relation("ProjectComments")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Pipeline {
+  id              String   @id @default(cuid())
+  projectId       String
+  name            String
+  description     String?
+  version         Int      @default(1)
+  isPublic        Boolean  @default(false)
+  jsonSchema      Json
+  createdByUserId String?
+
+  project   Project @relation(fields: [projectId], references: [id])
+  createdBy User?   @relation(fields: [createdByUserId], references: [id])
+
+  nodes PipelineNode[]
+  edges PipelineEdge[]
+  runs  Run[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PipelineNode {
+  id         String  @id @default(cuid())
+  pipelineId String
+  type       String
+  label      String
+  x          Float
+  y          Float
+  config     Json
+  version    Int     @default(1)
+
+  pipeline Pipeline @relation(fields: [pipelineId], references: [id])
+  steps    RunStep[]
+}
+
+model PipelineEdge {
+  id            String  @id @default(cuid())
+  pipelineId    String
+  sourceNodeId  String
+  targetNodeId  String
+  condition     Json?
+
+  pipeline   Pipeline     @relation(fields: [pipelineId], references: [id])
+  sourceNode PipelineNode @relation("SourceNode", fields: [sourceNodeId], references: [id])
+  targetNode PipelineNode @relation("TargetNode", fields: [targetNodeId], references: [id])
+}
+
+model Run {
+  id          String     @id @default(cuid())
+  pipelineId  String
+  startedAt   DateTime   @default(now())
+  finishedAt  DateTime?
+  status      RunStatus  @default(QUEUED)
+  tokenIn     Int        @default(0)
+  tokenOut    Int        @default(0)
+  costUSD     Decimal    @default(0)
+  error       String?
+
+  pipeline Pipeline @relation(fields: [pipelineId], references: [id])
+  steps    RunStep[]
+}
+
+model RunStep {
+  id         String   @id @default(cuid())
+  runId      String
+  nodeId     String
+  input      Json
+  output     Json?
+  tokenIn    Int      @default(0)
+  tokenOut   Int      @default(0)
+  durationMs Int      @default(0)
+  error      String?
+
+  run  Run          @relation(fields: [runId], references: [id])
+  node PipelineNode @relation(fields: [nodeId], references: [id])
+}
+
+model Prompt {
+  id              String   @id @default(cuid())
+  organizationId  String
+  name            String
+  content         String
+  variables       Json
+  tests           Json?
+  version         Int      @default(1)
+  tags            String[]
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Dataset {
+  id              String   @id @default(cuid())
+  organizationId  String
+  name            String
+  description     String?
+  items           Json
+  kind            DatasetKind
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ApiKey {
+  id              String   @id @default(cuid())
+  organizationId  String
+  name            String
+  hashedKey       String
+  scopes          String[]
+  createdAt       DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+}
+
+model Integration {
+  id              String   @id @default(cuid())
+  organizationId  String
+  provider        IntegrationProvider
+  config          Json
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+}
+
+model CreditLedger {
+  id              String   @id @default(cuid())
+  organizationId  String
+  delta           Int
+  reason          String
+  runId           String?
+  createdAt       DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  run          Run?         @relation(fields: [runId], references: [id])
+}
+
+model Subscription {
+  id               String   @id @default(cuid())
+  organizationId   String   @unique
+  stripeCustomerId String
+  stripeSubId      String?
+  plan             Plan     @default(FREE)
+  status           SubscriptionStatus
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+}
+
+model Webhook {
+  id              String   @id @default(cuid())
+  organizationId  String
+  url             String
+  secret          String
+  events          String[]
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+}
+
+model AuditLog {
+  id              String   @id @default(cuid())
+  organizationId  String
+  actorUserId     String
+  action          String
+  targetType      String
+  targetId        String
+  metadata        Json?
+  createdAt       DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  actor        User         @relation("UserAuditLogs", fields: [actorUserId], references: [id])
+}
+
+model Comment {
+  id          String   @id @default(cuid())
+  targetType  String
+  targetId    String
+  userId      String
+  content     String
+  createdAt   DateTime @default(now())
+
+  user     User    @relation(fields: [userId], references: [id])
+  project  Project? @relation("ProjectComments", fields: [targetId], references: [id])
+}
+
+// NextAuth models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?  @db.Text
+  access_token      String?  @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?  @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
