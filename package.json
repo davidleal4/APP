@@ -1,0 +1,30 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "Full-stack student productivity application",
+  "main": "index.js",
+  "scripts": {
+    "dev": "docker-compose up --build",
+    "build": "docker-compose build",
+    "start": "docker-compose up",
+    "stop": "docker-compose down",
+    "test": "npm run test:frontend && npm run test:backend",
+    "test:frontend": "cd frontend && npm test",
+    "test:backend": "cd backend && pytest",
+    "lint": "npm run lint:frontend",
+    "lint:frontend": "cd frontend && npm run lint"
+  },
+  "keywords": [
+    "education",
+    "student",
+    "productivity",
+    "gpa",
+    "flashcards",
+    "calendar"
+  ],
+  "author": "David Leal",
+  "license": "MIT",
+  "devDependencies": {
+    "cypress": "^13.0.0"
+  }
+}
